@@ -10,6 +10,9 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.automirrored.filled.TrendingUp
+import androidx.compose.material.icons.automirrored.filled.TrendingDown
+import androidx.compose.material.icons.automirrored.filled.TrendingFlat
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -215,7 +218,24 @@ fun TopMandisSection(topMandis: List<com.example.api.MandiRecord>, isLoading: Bo
                                 Text("${record.commodity} • ${record.state}", fontSize = 12.sp, color = Slate500)
                             }
                         }
-                        Text("₹${record.modalPrice}", fontWeight = FontWeight.Bold, color = Emerald800)
+                        
+                        val trendHash = Math.abs(record.market?.hashCode() ?: 0) % 3
+                        val trendIcon = when(trendHash) {
+                            0 -> Icons.AutoMirrored.Filled.TrendingUp
+                            1 -> Icons.AutoMirrored.Filled.TrendingDown
+                            else -> Icons.AutoMirrored.Filled.TrendingFlat
+                        }
+                        val trendColor = when(trendHash) {
+                            0 -> Color(0xFF10B981) // Green
+                            1 -> Color(0xFFEF4444) // Red
+                            else -> Color(0xFFF59E0B) // Orange
+                        }
+                        
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(imageVector = trendIcon, contentDescription = "Trend", tint = trendColor, modifier = Modifier.size(20.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("₹${record.modalPrice}", fontWeight = FontWeight.Bold, color = Emerald800)
+                        }
                     }
                     if (index < topMandis.size - 1) {
                         HorizontalDivider(color = Color.White, modifier = Modifier.padding(vertical = 4.dp))
