@@ -1,0 +1,6 @@
+{
+  "name": "Kisan AI",
+  "description": "AgriTech startup MVP featuring AI Crop Doctor, Weather, and Marketplace.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
