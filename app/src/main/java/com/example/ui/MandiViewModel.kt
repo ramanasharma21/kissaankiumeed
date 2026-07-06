@@ -23,6 +23,12 @@ class MandiViewModel(application: android.app.Application) : androidx.lifecycle.
     private val _messages = MutableStateFlow<List<ChatMessage>>(emptyList())
     val messages: StateFlow<List<ChatMessage>> = _messages.asStateFlow()
 
+    private val _topMandis = MutableStateFlow<List<com.example.api.MandiRecord>>(emptyList())
+    val topMandis: StateFlow<List<com.example.api.MandiRecord>> = _topMandis.asStateFlow()
+
+    private val _isTopMandisLoading = MutableStateFlow(false)
+    val isTopMandisLoading: StateFlow<Boolean> = _isTopMandisLoading.asStateFlow()
+
     private val agmarknetApiService = com.example.api.AgmarknetRetrofitClient.createService(application)
     private val mandiRepository = com.example.repository.MandiRepository(
         apiService = agmarknetApiService,
@@ -65,6 +71,27 @@ class MandiViewModel(application: android.app.Application) : androidx.lifecycle.
                 isUser = false
             )
         )
+        fetchTopMandis()
+    }
+
+    private fun fetchTopMandis() {
+        viewModelScope.launch {
+            _isTopMandisLoading.value = true
+            try {
+                val result = mandiRepository.getMandiPrices(limit = 100)
+                if (result is com.example.repository.Result.Success) {
+                    val sorted = result.data
+                        .filter { it.modalPrice != null && it.modalPrice.toDoubleOrNull() != null }
+                        .sortedByDescending { it.modalPrice!!.toDouble() }
+                        .take(3)
+                    _topMandis.value = sorted
+                }
+            } catch (e: Exception) {
+                // Ignore errors for now
+            } finally {
+                _isTopMandisLoading.value = false
+            }
+        }
     }
 
     fun sendMessage(userText: String) {

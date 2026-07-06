@@ -32,6 +32,8 @@ import kotlinx.coroutines.launch
 @Composable
 fun MandiAssistantScreen(viewModel: MandiViewModel) {
     val messages by viewModel.messages.collectAsState()
+    val topMandis by viewModel.topMandis.collectAsState()
+    val isTopMandisLoading by viewModel.isTopMandisLoading.collectAsState()
     var inputText by remember { mutableStateOf("") }
     val listState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
@@ -62,6 +64,12 @@ fun MandiAssistantScreen(viewModel: MandiViewModel) {
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
+            if (isTopMandisLoading || topMandis.isNotEmpty()) {
+                item {
+                    TopMandisSection(topMandis = topMandis, isLoading = isTopMandisLoading)
+                }
+            }
+
             items(messages) { message ->
                 ChatBubble(message = message)
             }
@@ -175,6 +183,44 @@ fun ChatBubble(message: ChatMessage) {
                     fontSize = 15.sp,
                     lineHeight = 22.sp
                 )
+            }
+        }
+    }
+}
+
+@Composable
+fun TopMandisSection(topMandis: List<com.example.api.MandiRecord>, isLoading: Boolean) {
+    Surface(
+        modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+        shape = RoundedCornerShape(16.dp),
+        color = Emerald100,
+        shadowElevation = 2.dp
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text("Top 3 Best Paying Mandis", fontWeight = FontWeight.Bold, color = Emerald800, fontSize = 16.sp)
+            Spacer(modifier = Modifier.height(12.dp))
+            if (isLoading) {
+                CircularProgressIndicator(color = Emerald800, modifier = Modifier.size(24.dp).align(Alignment.CenterHorizontally))
+            } else {
+                topMandis.forEachIndexed { index, record ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text("${index + 1}.", fontWeight = FontWeight.Bold, color = Emerald800, modifier = Modifier.width(20.dp))
+                            Column {
+                                Text(record.market ?: "Unknown", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                                Text("${record.commodity} • ${record.state}", fontSize = 12.sp, color = Slate500)
+                            }
+                        }
+                        Text("₹${record.modalPrice}", fontWeight = FontWeight.Bold, color = Emerald800)
+                    }
+                    if (index < topMandis.size - 1) {
+                        HorizontalDivider(color = Color.White, modifier = Modifier.padding(vertical = 4.dp))
+                    }
+                }
             }
         }
     }
